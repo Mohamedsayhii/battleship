@@ -4,7 +4,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
     entry: {
         index: './src/index.js',
-        print: './src/print.js',
     },
 
     output: {
@@ -15,7 +14,7 @@ module.exports = {
 
     plugins: [
         new HtmlWebpackPlugin({
-            title: 'Knights Travail',
+            title: 'Battleship',
             template: 'src/index.html',
         }),
     ],
