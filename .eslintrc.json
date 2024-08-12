@@ -19,6 +19,7 @@
         "no-undef": "off",
         "import/no-extraneous-dependencies": "off",
         "no-plusplus": "off",
-        "no-unused-vars": "off"
+        "no-unused-vars": "off",
+        "consistent-return": "off"
     }
 }
