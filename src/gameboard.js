@@ -80,7 +80,7 @@ const gameboard = () => {
             return true;
     };
 
-    return { getBoard, placeShip, receiveAttack };
+    return { getBoard, placeShip, receiveAttack, allSunk };
 };
 
 export default gameboard;
