@@ -69,6 +69,17 @@ const gameboard = () => {
         }
     };
 
+    const allSunk = () => {
+        if (
+            carrier.isSunk() &&
+            battleship.isSunk() &&
+            destroyer.isSunk() &&
+            submarine.isSunk() &&
+            patrolBoat.isSunk()
+        )
+            return true;
+    };
+
     return { getBoard, placeShip, receiveAttack };
 };
 
