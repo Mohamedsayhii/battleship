@@ -1,12 +1,15 @@
 const ship = (length) => {
     let hits = 0;
+    const shipCoordinates = [];
 
-    const getHits = () => hits;
+    const addCoordinates = (coordinates) => shipCoordinates.push(coordinates);
     const hit = () => hits++;
-
     const isSunk = () => length === hits;
 
-    return { length, getHits, hit, isSunk };
+    const getHits = () => hits;
+    const getShipCoordinates = () => shipCoordinates;
+
+    return { length, getHits, getShipCoordinates, addCoordinates, hit, isSunk };
 };
 
 export default ship;
