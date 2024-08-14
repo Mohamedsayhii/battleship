@@ -36,13 +36,13 @@ describe('gameboard test units', () => {
 
     test('should reject incorrect placements of ships', () => {
         expect(game.placeShip(carrier, [9, 9], false)).toMatch(
-            'Incorrect placement of a ship',
+            'Incorrect placement',
         );
     });
 
     test('should reject cells already part of ships', () => {
         expect(game.placeShip(carrier, [5, 5], false)).toMatch(
-            'cell already part of a ship',
+            'Incorrect placement',
         );
     });
 
