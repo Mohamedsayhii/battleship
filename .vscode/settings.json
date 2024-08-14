@@ -1,3 +1,5 @@
 {
-    "cSpell.words": ["gameboard"]
+    "cSpell.words": ["gameboard"],
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true
 }
