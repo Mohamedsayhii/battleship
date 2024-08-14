@@ -6,15 +6,6 @@ describe('gameboard test units', () => {
     const game = gameboard();
     const board = game.getBoard();
 
-    test('should check if cell is part of ship', () => {
-        game.placeShip(carrier, [0, 0], false);
-        expect(board[0][0].isPartOfShip).toBeTruthy();
-    });
-
-    test('should check if cell is not part of ship', () => {
-        expect(board[5][5].isPartOfShip).toBeFalsy();
-    });
-
     test('should check if a ship is horizontal and placed correctly', () => {
         expect(game.placeShip(carrier, [0, 0], false)).toStrictEqual([
             [0, 0],
@@ -34,15 +25,29 @@ describe('gameboard test units', () => {
         ]);
     });
 
+    test('should check if cell is part of ship', () => {
+        expect(board[0][0].isPartOfShip).toBeTruthy();
+    });
+
+    test('should check if cell is not part of ship', () => {
+        expect(board[7][7].isPartOfShip).toBeFalsy();
+    });
+
     test('should reject incorrect placements of ships', () => {
         expect(game.placeShip(carrier, [9, 9], false)).toMatch(
-            'Incorrect placement',
+            'Incorrect placement of ship',
+        );
+    });
+
+    test('should reject overlapping of ships', () => {
+        expect(game.placeShip(carrier, [5, 4], false)).toMatch(
+            'Incorrect placement of ship',
         );
     });
 
     test('should reject cells already part of ships', () => {
         expect(game.placeShip(carrier, [5, 5], false)).toMatch(
-            'Incorrect placement',
+            'Incorrect placement of ship',
         );
     });
 

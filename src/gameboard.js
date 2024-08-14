@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 import { carrier, battleship, destroyer, submarine, patrolBoat } from './ship';
 
 const gameboardCell = (coordinates) => {
@@ -23,26 +24,41 @@ const gameboard = () => {
 
     const placeShip = (ship, coordinates, vertical) => {
         const [x, y] = coordinates;
+        const shipCoordinates = [];
 
-        for (let i = 0; i < ship.length; i++) {
-            if (
-                vertical &&
-                board[x + i][y].isPartOfShip === false &&
-                x + i < 10
-            ) {
-                board[x + i][y].isPartOfShip = true;
-                board[x + i][y].ship = ship.name;
-            } else if (
-                !vertical &&
-                board[x][y + i].isPartOfShip === false &&
-                y + i < 10
-            ) {
-                board[x][y + i].isPartOfShip = true;
-                board[x][y + i].ship = ship.name;
+        if (vertical) {
+            if (x + ship.length <= 10) {
+                for (let i = 0; i < ship.length; i++) {
+                    if (!board[x + i][y].isPartOfShip) {
+                        board[x + i][y].isPartOfShip = true;
+                        board[x + i][y].ship = ship.name;
+                        shipCoordinates.push([x + i, y]);
+                    } else {
+                        return 'Incorrect placement of ship';
+                    }
+                }
             } else {
-                return 'Incorrect placement';
+                return 'Incorrect placement of ship';
             }
+        } else if (!vertical) {
+            if (y + ship.length <= 10) {
+                for (let i = 0; i < ship.length; i++) {
+                    if (!board[x][y + i].isPartOfShip) {
+                        board[x][y + i].isPartOfShip = true;
+                        board[x][y + i].ship = ship.name;
+                        shipCoordinates.push([x, y + i]);
+                    } else {
+                        return 'Incorrect placement of ship';
+                    }
+                }
+            } else {
+                return 'Incorrect placement of ship';
+            }
+        } else {
+            return 'Incorrect placement of ship';
         }
+
+        return shipCoordinates;
     };
 
     const receiveAttack = (coordinates) => {
