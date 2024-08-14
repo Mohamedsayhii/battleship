@@ -5,7 +5,7 @@ const gameboardCell = (coordinates) => {
     const isPartOfShip = false;
     const ship = '';
 
-    return { isAttacked, isPartOfShip, ship };
+    return { coordinates, isAttacked, isPartOfShip, ship };
 };
 
 const gameboard = () => {
@@ -31,11 +31,9 @@ const gameboard = () => {
             if (vertical && board[x + i][y].isPartOfShip === false) {
                 board[x + i][y].isPartOfShip = true;
                 board[x + i][y].ship = ship.name;
-                ship.addCoordinates([x + i, y]);
             } else if (!vertical && board[x][y + i].isPartOfShip === false) {
                 board[x][y + i].isPartOfShip = true;
                 board[x][y + i].ship = ship.name;
-                ship.addCoordinates([x, y + i]);
             } else {
                 return 'cell already part of a ship';
             }

@@ -16,7 +16,7 @@ describe('gameboard test units', () => {
     });
 
     test('should check if a ship is horizontal and placed correctly', () => {
-        expect(carrier.getShipCoordinates()).toStrictEqual([
+        expect(game.placeShip(carrier, [0, 0], false)).toStrictEqual([
             [0, 0],
             [0, 1],
             [0, 2],
@@ -26,8 +26,7 @@ describe('gameboard test units', () => {
     });
 
     test('should check if a ship is vertical and placed correctly', () => {
-        game.placeShip(battleship, [5, 5], true);
-        expect(battleship.getShipCoordinates()).toStrictEqual([
+        expect(game.placeShip(battleship, [5, 5], true)).toStrictEqual([
             [5, 5],
             [6, 5],
             [7, 5],
