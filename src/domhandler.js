@@ -10,7 +10,6 @@ const domHandler = () => {
     player1.playerGameboard.placeShip(patrolBoat, [8, 9], true);
 
     const firstPlayerBoard = player1.playerGameboard.getBoard();
-
     firstPlayerBoard.forEach((row) => {
         row.forEach((boardCell) => {
             if (boardCell.isPartOfShip) {
@@ -29,10 +28,9 @@ const domHandler = () => {
     player2.playerGameboard.placeShip(battleship, [1, 9], true);
     player2.playerGameboard.placeShip(destroyer, [2, 2], false);
     player2.playerGameboard.placeShip(submarine, [7, 5], false);
-    player2.playerGameboard.placeShip(patrolBoat, [9, 0], false);
+    player2.playerGameboard.placeShip(patrolBoat, [9, 8], false);
 
     const secondPlayerBoard = player2.playerGameboard.getBoard();
-
     secondPlayerBoard.forEach((row) => {
         row.forEach((boardCell) => {
             if (boardCell.isPartOfShip) {
