@@ -1,3 +1,4 @@
+import domHandler from './domhandler';
 import footer from './footer';
 import header from './header';
 import main from './main';
@@ -9,6 +10,8 @@ const renderUI = () => {
     body.appendChild(header());
     body.appendChild(main());
     body.appendChild(footer());
+
+    domHandler();
 };
 
 export default renderUI;

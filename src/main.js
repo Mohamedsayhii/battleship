@@ -16,7 +16,7 @@ const createBoard = (id) => {
         for (let j = 0; j < 10; j++) {
             const cellDiv = document.createElement('div');
             cellDiv.className = 'cell';
-            cellDiv.id = `$[${i},${j}]`;
+            cellDiv.id = `${id}${i}${j}`;
             rowDiv.appendChild(cellDiv);
         }
         boardDiv.appendChild(rowDiv);
