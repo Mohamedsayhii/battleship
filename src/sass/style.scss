@@ -66,6 +66,19 @@ main {
                     .cell {
                         padding: 18px;
                         border: 2px solid black;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+
+                        span {
+                            position: absolute;
+                            height: 0.5rem;
+                            width: 0.5rem;
+                            background: black;
+                            border-radius: 50%;
+                            margin-top: -2px;
+                            margin-left: -2px;
+                        }
                     }
                 }
             }
