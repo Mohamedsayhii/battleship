@@ -1,14 +1,13 @@
 import player from './player';
 import { battleship, carrier, destroyer, patrolBoat, submarine } from './ship';
 
+let currentPlayer = 'player2';
+
 function populateGameboard(player) {
     const playerBoard = player.playerGameboard.getBoard();
     playerBoard.forEach((row) => {
         row.forEach((boardCell) => {
-            const selector =
-                player.type === 'player1'
-                    ? `#firstBoard${boardCell.coordinates[0]}${boardCell.coordinates[1]}`
-                    : `#secondBoard${boardCell.coordinates[0]}${boardCell.coordinates[1]}`;
+            const selector = `#${player.type === 'player1' ? 'firstBoard' : 'secondBoard'}${boardCell.coordinates.join('')}`;
             if (boardCell.isPartOfShip) {
                 const boardCellDiv = document.querySelector(selector);
                 boardCellDiv.style.backgroundColor = 'rgba(0,0,255,0.1)';
@@ -20,7 +19,10 @@ function populateGameboard(player) {
 
 function boardHandler(player, board, coordIndices) {
     const boardDiv = document.querySelector(board);
+
     boardDiv.addEventListener('click', (e) => {
+        if (player.type !== currentPlayer) return;
+
         if (e.target.style.backgroundColor) {
             e.target.style.backgroundColor = 'rgba(255,0,0,.2)';
             e.target.style.border = '2px solid red';
@@ -35,7 +37,22 @@ function boardHandler(player, board, coordIndices) {
         ];
 
         player.playerGameboard.receiveAttack(coordinates);
+        currentPlayer = currentPlayer === 'player1' ? 'player2' : 'player1';
+        toggleBoards();
     });
+}
+
+function toggleBoards() {
+    const firstBoard = document.querySelector('#firstBoard');
+    const secondBoard = document.querySelector('#secondBoard');
+
+    if (currentPlayer === 'player1') {
+        firstBoard.style.pointerEvents = 'auto';
+        secondBoard.style.pointerEvents = 'none';
+    } else {
+        firstBoard.style.pointerEvents = 'none';
+        secondBoard.style.pointerEvents = 'auto';
+    }
 }
 
 const domHandler = () => {
@@ -55,6 +72,7 @@ const domHandler = () => {
     player2.playerGameboard.placeShip(patrolBoat, [9, 8], false);
     populateGameboard(player2);
 
+    toggleBoards();
     boardHandler(player1, '#firstBoard', [10, 11]);
     boardHandler(player2, '#secondBoard', [11, 12]);
 };

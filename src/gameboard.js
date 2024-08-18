@@ -97,6 +97,7 @@ const gameboard = () => {
             patrolBoat.isSunk()
         )
             return true;
+        return false;
     };
 
     return { getBoard, placeShip, receiveAttack, allSunk };
