@@ -1,5 +1,4 @@
-/* eslint-disable no-continue */
-import { carrier, battleship, destroyer, submarine, patrolBoat } from './ship';
+import ship from './ship';
 
 const gameboardCell = (coordinates) => {
     const isAttacked = false;
@@ -11,6 +10,11 @@ const gameboardCell = (coordinates) => {
 
 const gameboard = () => {
     const board = [];
+    const carrier = ship('carrier', 5);
+    const battleship = ship('battleship', 4);
+    const destroyer = ship('destroyer', 3);
+    const submarine = ship('submarine', 3);
+    const patrolBoat = ship('patrol', 2);
 
     for (let i = 0; i < 10; i++) {
         const row = [];
@@ -93,14 +97,16 @@ const gameboard = () => {
             carrier.isSunk() &&
             battleship.isSunk() &&
             destroyer.isSunk() &&
-            submarine.isSunk() &&
-            patrolBoat.isSunk()
+            submarine.isSunk()
         )
             return true;
+
         return false;
     };
 
-    return { getBoard, placeShip, receiveAttack, allSunk };
+    const allShips = [carrier, battleship, destroyer, submarine, patrolBoat];
+
+    return { allShips, getBoard, placeShip, receiveAttack, allSunk };
 };
 
 export default gameboard;

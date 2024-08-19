@@ -49,8 +49,8 @@ const main = () => {
     // buttons
     const buttons = document.createElement('div');
     buttons.className = 'buttons';
-    buttons.appendChild(createButton('START'));
-    buttons.appendChild(createButton('RANDOMIZE'));
+    buttons.appendChild(createButton('START', 'startButton'));
+    buttons.appendChild(createButton('RANDOMIZE', 'randomButton'));
 
     main.appendChild(content);
     main.appendChild(buttons);

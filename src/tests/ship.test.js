@@ -1,6 +1,9 @@
-import ship, { carrier, patrolBoat } from '../ship';
+import ship from '../ship';
 
 describe('Ship unit tests', () => {
+    const carrier = ship('carrier', 5);
+    const patrolBoat = ship('patrol', 2);
+
     test('should return hits', () => {
         expect(carrier.getHits()).toBe(0);
     });

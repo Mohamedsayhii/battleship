@@ -1,7 +1,7 @@
 import player from './player';
-import { battleship, carrier, destroyer, patrolBoat, submarine } from './ship';
+import ship from './ship';
 
-let currentPlayer = 'player2';
+let currentPlayer = 'player1';
 
 function populateGameboard(player) {
     const playerBoard = player.playerGameboard.getBoard();
@@ -17,64 +17,90 @@ function populateGameboard(player) {
     });
 }
 
+function takeTurns() {
+    const firstBoard = document.querySelector('#firstBoard');
+    const secondBoard = document.querySelector('#secondBoard');
+    const instructions = document.querySelector('.instructions');
+
+    if (currentPlayer === 'player1') {
+        firstBoard.style.pointerEvents = 'none';
+        secondBoard.style.pointerEvents = 'auto';
+        instructions.textContent = 'Your turn';
+    } else {
+        firstBoard.style.pointerEvents = 'auto';
+        secondBoard.style.pointerEvents = 'none';
+        instructions.textContent = "Opponent's turn";
+    }
+}
+
 function boardHandler(player, board, coordIndices) {
     const boardDiv = document.querySelector(board);
+    const playerBoard = player.playerGameboard.getBoard();
 
     boardDiv.addEventListener('click', (e) => {
-        if (player.type !== currentPlayer) return;
-
-        if (e.target.style.backgroundColor) {
-            e.target.style.backgroundColor = 'rgba(255,0,0,.2)';
-            e.target.style.border = '2px solid red';
-        } else {
-            const point = document.createElement('span');
-            e.target.appendChild(point);
-        }
-
         const coordinates = [
             parseInt(e.target.id[coordIndices[0]], 10),
             parseInt(e.target.id[coordIndices[1]], 10),
         ];
 
-        player.playerGameboard.receiveAttack(coordinates);
-        currentPlayer = currentPlayer === 'player1' ? 'player2' : 'player1';
-        toggleBoards();
+        const [x, y] = coordinates;
+
+        if (!playerBoard[x][y].isAttacked) {
+            if (player.type === currentPlayer) return;
+
+            if (e.target.style.backgroundColor) {
+                e.target.style.backgroundColor = 'rgba(255,0,0,.2)';
+                e.target.style.border = '2px solid red';
+            } else {
+                const point = document.createElement('span');
+                e.target.appendChild(point);
+            }
+
+            player.playerGameboard.receiveAttack(coordinates);
+
+            if (player.playerGameboard.allSunk()) {
+                const boards = document.querySelectorAll('.board');
+                boards.forEach((board) => {
+                    board.style.pointerEvents = 'none';
+                });
+                const instructions = document.querySelector('.instructions');
+                instructions.textContent = `${currentPlayer} has won!`;
+            } else {
+                currentPlayer =
+                    currentPlayer === 'player1' ? 'player2' : 'player1';
+                takeTurns();
+            }
+        }
     });
-}
-
-function toggleBoards() {
-    const firstBoard = document.querySelector('#firstBoard');
-    const secondBoard = document.querySelector('#secondBoard');
-
-    if (currentPlayer === 'player1') {
-        firstBoard.style.pointerEvents = 'auto';
-        secondBoard.style.pointerEvents = 'none';
-    } else {
-        firstBoard.style.pointerEvents = 'none';
-        secondBoard.style.pointerEvents = 'auto';
-    }
 }
 
 const domHandler = () => {
     const player1 = player('player1');
-    player1.playerGameboard.placeShip(carrier, [0, 0], false);
-    player1.playerGameboard.placeShip(battleship, [3, 0], false);
-    player1.playerGameboard.placeShip(destroyer, [5, 7], false);
-    player1.playerGameboard.placeShip(submarine, [7, 0], true);
-    player1.playerGameboard.placeShip(patrolBoat, [8, 9], true);
+    player1.playerGameboard.placeShip(ship('carrier', 5), [0, 0], false);
+    player1.playerGameboard.placeShip(ship('battleship', 4), [3, 0], false);
+    player1.playerGameboard.placeShip(ship('destroyer', 3), [5, 7], false);
+    player1.playerGameboard.placeShip(ship('submarine', 3), [7, 0], true);
+    player1.playerGameboard.placeShip(ship('patrol', 2), [8, 9], true);
     populateGameboard(player1);
 
     const player2 = player('player2');
-    player2.playerGameboard.placeShip(carrier, [0, 0], true);
-    player2.playerGameboard.placeShip(battleship, [1, 9], true);
-    player2.playerGameboard.placeShip(destroyer, [2, 2], false);
-    player2.playerGameboard.placeShip(submarine, [7, 5], false);
-    player2.playerGameboard.placeShip(patrolBoat, [9, 8], false);
+    player2.playerGameboard.placeShip(ship('carrier', 5), [0, 0], true);
+    player2.playerGameboard.placeShip(ship('battleship', 4), [1, 9], true);
+    player2.playerGameboard.placeShip(ship('destroyer', 3), [2, 2], false);
+    player2.playerGameboard.placeShip(ship('submarine', 3), [7, 5], false);
+    player2.playerGameboard.placeShip(ship('patrol', 2), [9, 8], false);
     populateGameboard(player2);
 
-    toggleBoards();
-    boardHandler(player1, '#firstBoard', [10, 11]);
-    boardHandler(player2, '#secondBoard', [11, 12]);
+    const startButton = document.querySelector('#startButton');
+
+    startButton.addEventListener('click', () => {
+        startButton.style.pointerEvents = 'none';
+        const instructions = document.querySelector('.instructions');
+        instructions.textContent = 'your turn';
+
+        boardHandler(player1, '#firstBoard', [10, 11]);
+        boardHandler(player2, '#secondBoard', [11, 12]);
+    });
 };
 
 export default domHandler;

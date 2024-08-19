@@ -1,10 +1,19 @@
-// Test cases
 import gameboard from '../gameboard';
-import { battleship, carrier } from '../ship';
+import ship from '../ship';
 
 describe('gameboard test units', () => {
     const game = gameboard();
     const board = game.getBoard();
+
+    const carrier = ship('carrier', 5);
+    const battleship = ship('battleship', 4);
+    const destroyer = ship('destroyer', 3);
+    const submarine = ship('submarine', 3);
+    const patrolBoat = ship('patrol', 2);
+
+    game.placeShip(destroyer, [1, 0], false);
+    game.placeShip(submarine, [2, 0], false);
+    game.placeShip(patrolBoat, [3, 0], false);
 
     test('should check if a ship is horizontal and placed correctly', () => {
         expect(game.placeShip(carrier, [0, 0], false)).toStrictEqual([
@@ -61,17 +70,40 @@ describe('gameboard test units', () => {
         game.receiveAttack([0, 0]);
         expect(board[0][0].isPartOfShip).toBeTruthy();
         expect(board[0][0].isAttacked).toBeTruthy();
-        expect(carrier.getHits()).toBe(1);
+        expect(game.allShips[0].getHits()).toBe(1);
     });
 
     test('should record multiple attacks on ship', () => {
         game.receiveAttack([5, 5]);
         game.receiveAttack([6, 5]);
         game.receiveAttack([7, 5]);
-        expect(battleship.getHits()).toBe(3);
+        game.receiveAttack([8, 5]);
+        expect(game.allShips[1].getHits()).toBe(4);
+        expect(game.allShips[1].isSunk()).toBeTruthy();
     });
 
     test('should not increment hits if cell is already attacked', () => {
         expect(game.receiveAttack([5, 5])).toMatch('cell already attacked');
+    });
+
+    test('should check for when all ships have sunk', () => {
+        game.receiveAttack([0, 0]);
+        game.receiveAttack([0, 1]);
+        game.receiveAttack([0, 2]);
+        game.receiveAttack([0, 3]);
+        game.receiveAttack([0, 4]);
+
+        game.receiveAttack([1, 0]);
+        game.receiveAttack([1, 1]);
+        game.receiveAttack([1, 2]);
+
+        game.receiveAttack([2, 0]);
+        game.receiveAttack([2, 1]);
+        game.receiveAttack([2, 2]);
+
+        game.receiveAttack([3, 0]);
+        game.receiveAttack([3, 1]);
+
+        expect(game.allSunk()).toBeTruthy();
     });
 });
