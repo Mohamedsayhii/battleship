@@ -3,7 +3,7 @@ import ship from './ship';
 
 let currentPlayer = 'player1';
 
-function populateGameboard(player) {
+function renderGameboard(player) {
     const playerBoard = player.playerGameboard.getBoard();
     playerBoard.forEach((row) => {
         row.forEach((boardCell) => {
@@ -81,7 +81,7 @@ const domHandler = () => {
     player1.playerGameboard.placeShip(ship('destroyer', 3), [5, 7], false);
     player1.playerGameboard.placeShip(ship('submarine', 3), [7, 0], true);
     player1.playerGameboard.placeShip(ship('patrol', 2), [8, 9], true);
-    populateGameboard(player1);
+    renderGameboard(player1);
 
     const player2 = player('player2');
     player2.playerGameboard.placeShip(ship('carrier', 5), [0, 0], true);
@@ -89,17 +89,27 @@ const domHandler = () => {
     player2.playerGameboard.placeShip(ship('destroyer', 3), [2, 2], false);
     player2.playerGameboard.placeShip(ship('submarine', 3), [7, 5], false);
     player2.playerGameboard.placeShip(ship('patrol', 2), [9, 8], false);
-    populateGameboard(player2);
-
-    const startButton = document.querySelector('#startButton');
+    renderGameboard(player2);
 
     startButton.addEventListener('click', () => {
         startButton.style.pointerEvents = 'none';
+        randomButton.style.pointerEvents = 'none';
+
         const instructions = document.querySelector('.instructions');
         instructions.textContent = 'your turn';
 
         boardHandler(player1, '#firstBoard', [10, 11]);
         boardHandler(player2, '#secondBoard', [11, 12]);
+    });
+
+    randomButton.addEventListener('click', () => {
+        const cells = document.querySelectorAll('#firstBoard .cell');
+        cells.forEach((cell) => {
+            cell.style.removeProperty('background-color');
+            cell.style.removeProperty('border');
+        });
+        player1.playerGameboard.randomPlacement();
+        renderGameboard(player1);
     });
 };
 
