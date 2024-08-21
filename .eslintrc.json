@@ -21,6 +21,8 @@
         "no-plusplus": "off",
         "no-unused-vars": "off",
         "consistent-return": "off",
-        "no-param-reassign": "off"
+        "no-param-reassign": "off",
+        "eqeqeq": "off",
+        "no-lonely-if": "off"
     }
 }

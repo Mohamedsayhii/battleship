@@ -39,19 +39,23 @@ const createButton = (textContent, id) => {
 
 const main = () => {
     const main = document.createElement('main');
-    // content
+
     const content = document.createElement('div');
     content.className = 'content';
-
     content.appendChild(createBoard('firstBoard'));
     content.appendChild(createBoard('secondBoard'));
 
-    // buttons
+    const opponentButtons = document.createElement('div');
+    opponentButtons.className = 'opponentButtons';
+    opponentButtons.appendChild(createButton('HUMAN', 'humanButton'));
+    opponentButtons.appendChild(createButton('COMPUTER', 'computerButton'));
+
     const buttons = document.createElement('div');
     buttons.className = 'buttons';
     buttons.appendChild(createButton('START', 'startButton'));
     buttons.appendChild(createButton('RANDOMIZE', 'randomButton'));
 
+    content.appendChild(opponentButtons);
     main.appendChild(content);
     main.appendChild(buttons);
 

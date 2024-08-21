@@ -1,5 +1,3 @@
-/* eslint-disable no-lonely-if */
-/* eslint-disable eqeqeq */
 import ship from './ship';
 
 function includesArray(array, target) {
