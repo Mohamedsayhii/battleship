@@ -12,21 +12,21 @@ function includesArray(array, target) {
 }
 
 function renderGameboard(player) {
-    const playerBoard = player.playerGameboard.getBoard();
-    playerBoard.forEach((row) => {
-        row.forEach((boardCell) => {
-            const selector = `#${player.type === 'player1' ? 'firstBoard' : 'secondBoard'}${boardCell.coordinates.join('')}`;
-            if (boardCell.isPartOfShip) {
-                const boardCellDiv = document.querySelector(selector);
-                boardCellDiv.style.backgroundColor = 'rgba(0,0,255,0.1)';
-                boardCellDiv.style.border = '2px solid #00f';
-            }
-        });
-    });
-
     if (player.type !== 'player1') {
         const opponentButtons = document.querySelector('.opponentButtons');
         opponentButtons.style.visibility = 'hidden';
+    } else {
+        const playerBoard = player.playerGameboard.getBoard();
+        playerBoard.forEach((row) => {
+            row.forEach((boardCell) => {
+                const selector = `#${player.type === 'player1' ? 'firstBoard' : 'secondBoard'}${boardCell.coordinates.join('')}`;
+                if (boardCell.isPartOfShip) {
+                    const boardCellDiv = document.querySelector(selector);
+                    boardCellDiv.style.backgroundColor = 'rgba(0,0,255,0.1)';
+                    boardCellDiv.style.border = '2px solid #00f';
+                }
+            });
+        });
     }
 }
 
@@ -47,56 +47,58 @@ function takeTurns() {
 }
 
 function computerHandler(player) {
+    const firstBoard = document.querySelector('#firstBoard');
     const secondBoard = document.querySelector('#secondBoard');
     const playerBoard = player.playerGameboard.getBoard();
     const existingCoordinates = [];
 
     secondBoard.addEventListener('click', () => {
         const instructions = document.querySelector('.instructions');
-        instructions.textContent = 'Computer is thinking';
 
-        setTimeout(() => {
-            let coordinates = [];
-            do {
-                coordinates = [
-                    Math.floor(Math.random() * 10),
-                    Math.floor(Math.random() * 10),
-                ];
-            } while (includesArray(existingCoordinates, coordinates));
+        if (currentPlayer === 'player2') {
+            instructions.textContent = 'Computer is thinking';
+            setTimeout(() => {
+                let coordinates = [];
+                do {
+                    coordinates = [
+                        Math.floor(Math.random() * 10),
+                        Math.floor(Math.random() * 10),
+                    ];
+                } while (includesArray(existingCoordinates, coordinates));
 
-            const [x, y] = coordinates;
+                const [x, y] = coordinates;
 
-            if (!playerBoard[x][y].isAttacked) {
-                const boardCell = document.querySelector(`#firstBoard${x}${y}`);
-                if (player.type === currentPlayer) return;
+                if (!playerBoard[x][y].isAttacked) {
+                    const boardCell = document.querySelector(
+                        `#firstBoard${x}${y}`,
+                    );
+                    if (player.type === currentPlayer) return;
 
-                if (boardCell.style.backgroundColor) {
-                    boardCell.style.backgroundColor = 'rgba(255,0,0,.2)';
-                    boardCell.style.border = '2px solid red';
-                } else {
-                    const point = document.createElement('span');
-                    boardCell.appendChild(point);
+                    if (playerBoard[x][y].isPartOfShip) {
+                        boardCell.style.backgroundColor = 'rgba(255,0,0,.2)';
+                        boardCell.style.border = '2px solid red';
+                    } else {
+                        const point = document.createElement('span');
+                        boardCell.appendChild(point);
+                    }
+
+                    existingCoordinates.push(coordinates);
+                    player.playerGameboard.receiveAttack(coordinates);
+
+                    if (player.playerGameboard.allSunk()) {
+                        const boards = document.querySelectorAll('.board');
+                        boards.forEach((board) => {
+                            board.style.pointerEvents = 'none';
+                        });
+                        instructions.textContent = `${currentPlayer} has won!`;
+                    } else {
+                        currentPlayer =
+                            currentPlayer === 'player1' ? 'player2' : 'player1';
+                        takeTurns();
+                    }
                 }
-
-                existingCoordinates.push(coordinates);
-                player.playerGameboard.receiveAttack(coordinates);
-                console.log(player.playerGameboard.getBoard());
-
-                if (player.playerGameboard.allSunk()) {
-                    const boards = document.querySelectorAll('.board');
-                    boards.forEach((board) => {
-                        board.style.pointerEvents = 'none';
-                    });
-                    const instructions =
-                        document.querySelector('.instructions');
-                    instructions.textContent = `${currentPlayer} has won!`;
-                } else {
-                    currentPlayer =
-                        currentPlayer === 'player1' ? 'player2' : 'player1';
-                    takeTurns();
-                }
-            }
-        }, 2500);
+            }, 500);
+        }
     });
 }
 
@@ -115,7 +117,7 @@ function boardHandler(player, board, coordIndices) {
         if (!playerBoard[x][y].isAttacked) {
             if (player.type === currentPlayer) return;
 
-            if (e.target.style.backgroundColor) {
+            if (playerBoard[x][y].isPartOfShip) {
                 e.target.style.backgroundColor = 'rgba(255,0,0,.2)';
                 e.target.style.border = '2px solid red';
             } else {
@@ -141,6 +143,16 @@ function boardHandler(player, board, coordIndices) {
     });
 }
 
+function humanvsComputer(player1, player2) {
+    startButton.style.pointerEvents = 'none';
+    randomButton.style.pointerEvents = 'none';
+
+    const instructions = document.querySelector('.instructions');
+    instructions.textContent = 'your turn';
+    boardHandler(player2, '#secondBoard', [11, 12]);
+    computerHandler(player1);
+}
+
 const domHandler = () => {
     const player1 = player('player1');
     player1.playerGameboard.placeShip(ship('carrier', 5), [0, 0], false);
@@ -150,9 +162,12 @@ const domHandler = () => {
     player1.playerGameboard.placeShip(ship('patrol', 2), [8, 9], true);
     renderGameboard(player1);
 
+    let opponent;
     let player2;
 
     humanButton.addEventListener('click', () => {
+        opponent = 'human';
+        console.log(opponent);
         player2 = player('player2');
         player2.playerGameboard.placeShip(ship('carrier', 5), [0, 0], true);
         player2.playerGameboard.placeShip(ship('battleship', 4), [1, 9], true);
@@ -163,6 +178,8 @@ const domHandler = () => {
     });
 
     computerButton.addEventListener('click', () => {
+        opponent = 'computer';
+        console.log(opponent);
         player2 = player('player2');
         player2.playerGameboard.randomPlacement();
         renderGameboard(player2);
@@ -179,19 +196,16 @@ const domHandler = () => {
     });
 
     startButton.addEventListener('click', () => {
-        startButton.style.pointerEvents = 'none';
-        randomButton.style.pointerEvents = 'none';
-
         const instructions = document.querySelector('.instructions');
-        instructions.textContent = 'your turn';
 
         if (player2 === undefined) {
-            startButton.style.pointerEvents = '';
-            randomButton.style.pointerEvents = '';
             instructions.textContent = 'opponent not ready';
         } else {
-            boardHandler(player2, '#secondBoard', [11, 12]);
-            computerHandler(player1);
+            if (opponent === 'computer') {
+                humanvsComputer(player1, player2);
+            } else {
+                console.log('humanversushuman');
+            }
         }
     });
 };
