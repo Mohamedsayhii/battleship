@@ -12,25 +12,149 @@ function includesArray(array, target) {
 }
 
 function renderGameboard(player) {
-    if (player.type !== 'player1') {
-        const opponentButtons = document.querySelector('.opponentButtons');
-        opponentButtons.style.visibility = 'hidden';
-    } else {
-        const playerBoard = player.playerGameboard.getBoard();
-        playerBoard.forEach((row) => {
-            row.forEach((boardCell) => {
-                const selector = `#${player.type === 'player1' ? 'firstBoard' : 'secondBoard'}${boardCell.coordinates.join('')}`;
+    const playerBoard = player.playerGameboard.getBoard();
+    playerBoard.forEach((row) => {
+        row.forEach((boardCell) => {
+            const selector = `#${player.type === 'player1' ? 'firstBoard' : 'secondBoard'}${boardCell.coordinates.join('')}`;
+            const boardCellDiv = document.querySelector(selector);
+            if (boardCell.isPartOfShip) {
+                boardCellDiv.style.backgroundColor = 'rgba(0,0,255,0.1)';
+                boardCellDiv.style.border = '2px solid #00f';
+            }
+            if (boardCell.isAttacked) {
                 if (boardCell.isPartOfShip) {
-                    const boardCellDiv = document.querySelector(selector);
-                    boardCellDiv.style.backgroundColor = 'rgba(0,0,255,0.1)';
-                    boardCellDiv.style.border = '2px solid #00f';
+                    boardCellDiv.style.backgroundColor = 'rgba(255,0,0,.2)';
+                    boardCellDiv.style.border = '2px solid red';
+                } else {
+                    const point = document.createElement('span');
+                    boardCellDiv.appendChild(point);
                 }
-            });
+            }
         });
+    });
+}
+
+function renderOpponentView(player) {
+    const playerBoard = player.playerGameboard.getBoard();
+    playerBoard.forEach((row) => {
+        row.forEach((boardCell) => {
+            const selector = `#${player.type === 'player1' ? 'firstBoard' : 'secondBoard'}${boardCell.coordinates.join('')}`;
+            const boardCellDiv = document.querySelector(selector);
+            if (boardCell.isAttacked) {
+                if (boardCell.isPartOfShip) {
+                    boardCellDiv.style.backgroundColor = 'rgba(255,0,0,.2)';
+                    boardCellDiv.style.border = '2px solid red';
+                } else {
+                    const point = document.createElement('span');
+                    boardCellDiv.appendChild(point);
+                }
+            }
+        });
+    });
+}
+
+function passScreen() {
+    const passScreen = document.createElement('div');
+    passScreen.className = 'pass-screen';
+    passScreen.textContent = 'click to pass screen';
+
+    return passScreen;
+}
+
+function takeTurns(player1, player2) {
+    const firstBoard = document.querySelector('#firstBoard');
+    const secondBoard = document.querySelector('#secondBoard');
+    const instructions = document.querySelector('.instructions');
+
+    const body = document.querySelector('body');
+    const passScreen = document.querySelector('.pass-screen');
+
+    passScreen.addEventListener('click', () => {
+        body.removeChild(body.lastChild);
+    });
+
+    const allCells = document.querySelectorAll('.cell');
+    allCells.forEach((cell) => {
+        if (cell.firstChild) {
+            cell.removeChild(cell.firstChild);
+        }
+        cell.style.backgroundColor = '';
+        cell.style.border = '';
+    });
+
+    if (currentPlayer === 'player1') {
+        renderGameboard(player1);
+        renderOpponentView(player2);
+        firstBoard.style.pointerEvents = 'none';
+        secondBoard.style.pointerEvents = 'auto';
+        instructions.textContent = 'Your turn';
+    } else {
+        renderGameboard(player2);
+        renderOpponentView(player1);
+        firstBoard.style.pointerEvents = 'auto';
+        secondBoard.style.pointerEvents = 'none';
+        instructions.textContent = "Opponent's turn";
     }
 }
 
-function takeTurns() {
+function boardsHandler(players, boards, coordIndicesArray) {
+    const body = document.querySelector('body');
+    players.forEach((player, index) => {
+        const boardDiv = document.querySelector(boards[index]);
+        const playerBoard = player.playerGameboard.getBoard();
+        const coordIndices = coordIndicesArray[index];
+        let clicked = false;
+
+        boardDiv.addEventListener('click', (e) => {
+            if (!clicked) {
+                clicked = true;
+                const coordinates = [
+                    parseInt(e.target.id[coordIndices[0]], 10),
+                    parseInt(e.target.id[coordIndices[1]], 10),
+                ];
+
+                const [x, y] = coordinates;
+
+                if (!playerBoard[x][y].isAttacked) {
+                    if (player.type === currentPlayer) return;
+
+                    if (playerBoard[x][y].isPartOfShip) {
+                        e.target.style.backgroundColor = 'rgba(255,0,0,.2)';
+                        e.target.style.border = '2px solid red';
+                    } else {
+                        const point = document.createElement('span');
+                        e.target.appendChild(point);
+                    }
+
+                    player.playerGameboard.receiveAttack(coordinates);
+
+                    if (player.playerGameboard.allSunk()) {
+                        const boards = document.querySelectorAll('.board');
+                        boards.forEach((board) => {
+                            board.style.pointerEvents = 'none';
+                        });
+                        const instructions =
+                            document.querySelector('.instructions');
+                        instructions.textContent = `${currentPlayer} won!`;
+                    } else {
+                        passDeviceButton.onclick = () => {
+                            clicked = false;
+                            body.appendChild(passScreen());
+                            currentPlayer =
+                                currentPlayer === 'player1'
+                                    ? 'opponent'
+                                    : 'player1';
+
+                            takeTurns(players[0], players[1]);
+                        };
+                    }
+                }
+            }
+        });
+    });
+}
+
+function takeTurnsComputer() {
     const firstBoard = document.querySelector('#firstBoard');
     const secondBoard = document.querySelector('#secondBoard');
     const instructions = document.querySelector('.instructions');
@@ -47,7 +171,6 @@ function takeTurns() {
 }
 
 function computerHandler(player) {
-    const firstBoard = document.querySelector('#firstBoard');
     const secondBoard = document.querySelector('#secondBoard');
     const playerBoard = player.playerGameboard.getBoard();
     const existingCoordinates = [];
@@ -55,7 +178,7 @@ function computerHandler(player) {
     secondBoard.addEventListener('click', () => {
         const instructions = document.querySelector('.instructions');
 
-        if (currentPlayer === 'player2') {
+        if (currentPlayer === 'opponent') {
             instructions.textContent = 'Computer is thinking';
             setTimeout(() => {
                 let coordinates = [];
@@ -90,14 +213,16 @@ function computerHandler(player) {
                         boards.forEach((board) => {
                             board.style.pointerEvents = 'none';
                         });
-                        instructions.textContent = `${currentPlayer} has won!`;
+                        instructions.textContent = `${currentPlayer} won!`;
                     } else {
                         currentPlayer =
-                            currentPlayer === 'player1' ? 'player2' : 'player1';
-                        takeTurns();
+                            currentPlayer === 'player1'
+                                ? 'opponent'
+                                : 'player1';
+                        takeTurnsComputer();
                     }
                 }
-            }, 500);
+            }, 1000);
         }
     });
 }
@@ -133,28 +258,49 @@ function boardHandler(player, board, coordIndices) {
                     board.style.pointerEvents = 'none';
                 });
                 const instructions = document.querySelector('.instructions');
-                instructions.textContent = `${currentPlayer} has won!`;
+                instructions.textContent = `${currentPlayer} won!`;
             } else {
                 currentPlayer =
-                    currentPlayer === 'player1' ? 'player2' : 'player1';
-                takeTurns();
+                    currentPlayer === 'player1' ? 'opponent' : 'player1';
+                takeTurnsComputer();
             }
         }
     });
 }
 
-function humanvsComputer(player1, player2) {
+function humanVersusComputer(player1, player2) {
     startButton.style.pointerEvents = 'none';
     randomButton.style.pointerEvents = 'none';
-
     const instructions = document.querySelector('.instructions');
     instructions.textContent = 'your turn';
+
     boardHandler(player2, '#secondBoard', [11, 12]);
     computerHandler(player1);
 }
 
+function humanVersusHuman(player1, player2) {
+    startButton.style.visibility = 'collapse';
+    randomButton.style.visibility = 'collapse';
+    passDeviceButton.style.visibility = 'visible';
+
+    const instructions = document.querySelector('.instructions');
+    instructions.textContent = 'your turn';
+
+    const players = [player1, player2];
+    const boards = ['#firstBoard', '#secondBoard'];
+    const coordIndicesArray = [
+        [10, 11],
+        [11, 12],
+    ];
+
+    boardsHandler(players, boards, coordIndicesArray);
+}
+
 const domHandler = () => {
     const player1 = player('player1');
+    let opponent;
+    let player2;
+
     player1.playerGameboard.placeShip(ship('carrier', 5), [0, 0], false);
     player1.playerGameboard.placeShip(ship('battleship', 4), [3, 0], false);
     player1.playerGameboard.placeShip(ship('destroyer', 3), [5, 7], false);
@@ -162,13 +308,11 @@ const domHandler = () => {
     player1.playerGameboard.placeShip(ship('patrol', 2), [8, 9], true);
     renderGameboard(player1);
 
-    let opponent;
-    let player2;
-
     humanButton.addEventListener('click', () => {
+        const opponentButtons = document.querySelector('.opponentButtons');
+        opponentButtons.style.visibility = 'hidden';
         opponent = 'human';
-        console.log(opponent);
-        player2 = player('player2');
+        player2 = player('opponent');
         player2.playerGameboard.placeShip(ship('carrier', 5), [0, 0], true);
         player2.playerGameboard.placeShip(ship('battleship', 4), [1, 9], true);
         player2.playerGameboard.placeShip(ship('destroyer', 3), [2, 2], false);
@@ -178,11 +322,11 @@ const domHandler = () => {
     });
 
     computerButton.addEventListener('click', () => {
+        const opponentButtons = document.querySelector('.opponentButtons');
+        opponentButtons.style.visibility = 'hidden';
         opponent = 'computer';
-        console.log(opponent);
-        player2 = player('player2');
+        player2 = player('opponent');
         player2.playerGameboard.randomPlacement();
-        renderGameboard(player2);
     });
 
     randomButton.addEventListener('click', () => {
@@ -202,9 +346,9 @@ const domHandler = () => {
             instructions.textContent = 'opponent not ready';
         } else {
             if (opponent === 'computer') {
-                humanvsComputer(player1, player2);
+                humanVersusComputer(player1, player2);
             } else {
-                console.log('humanversushuman');
+                humanVersusHuman(player1, player2);
             }
         }
     });

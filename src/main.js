@@ -54,6 +54,7 @@ const main = () => {
     buttons.className = 'buttons';
     buttons.appendChild(createButton('START', 'startButton'));
     buttons.appendChild(createButton('RANDOMIZE', 'randomButton'));
+    buttons.appendChild(createButton('PASS DEVICE', 'passDeviceButton'));
 
     content.appendChild(opponentButtons);
     main.appendChild(content);

@@ -118,6 +118,19 @@ body {
     background-color: lighten($color: white, $amount: 0);
     display: flex;
     flex-direction: column;
+
+    .pass-screen {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        text-transform: capitalize;
+        position: absolute;
+        background-color: black;
+        height: 100%;
+        width: 100%;
+        z-index: 2;
+    }
 }
 
 header {
@@ -192,6 +205,10 @@ main {
 
         button {
             @include button-style1();
+        }
+
+        #passDeviceButton {
+            visibility: collapse;
         }
     }
 }
