@@ -100,6 +100,16 @@ const gameboard = () => {
         return shipCoordinates;
     };
 
+    const removeShip = (ship) => {
+        for (let i = 0; i < 10; i++) {
+            for (let j = 0; j < 10; j++) {
+                if (board[i][j].ship === ship) {
+                    board[i][j] = gameboardCell([i, j]);
+                }
+            }
+        }
+    };
+
     const randomPlacement = () => {
         resetBoard();
         const ships = [carrier, battleship, destroyer, submarine, patrolBoat];
@@ -199,6 +209,7 @@ const gameboard = () => {
     return {
         getBoard,
         placeShip,
+        removeShip,
         randomPlacement,
         receiveAttack,
         allSunk,

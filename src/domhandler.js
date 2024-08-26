@@ -17,9 +17,16 @@ function renderGameboard(player) {
         row.forEach((boardCell) => {
             const selector = `#${player.type === 'player1' ? 'firstBoard' : 'secondBoard'}${boardCell.coordinates.join('')}`;
             const boardCellDiv = document.querySelector(selector);
+            if (boardCellDiv.hasAttribute('name')) {
+                boardCellDiv.removeAttribute('name');
+                boardCellDiv.removeAttribute('draggable');
+                boardCellDiv.removeAttribute('style');
+            }
             if (boardCell.isPartOfShip) {
                 boardCellDiv.style.backgroundColor = 'rgba(0,0,255,0.1)';
                 boardCellDiv.style.border = '2px solid #00f';
+                boardCellDiv.draggable = true;
+                boardCellDiv.setAttribute('name', boardCell.ship);
             }
             if (boardCell.isAttacked) {
                 if (boardCell.isPartOfShip) {
@@ -59,6 +66,42 @@ function passScreen() {
     passScreen.textContent = 'click to pass screen';
 
     return passScreen;
+}
+
+function setUpTurns(player1, player2) {
+    const firstBoard = document.querySelector('#firstBoard');
+    const secondBoard = document.querySelector('#secondBoard');
+    const instructions = document.querySelector('.instructions');
+
+    const body = document.querySelector('body');
+    const passScreen = document.querySelector('.pass-screen');
+
+    passScreen.addEventListener('click', () => {
+        body.removeChild(body.lastChild);
+    });
+
+    const allCells = document.querySelectorAll('.cell');
+    allCells.forEach((cell) => {
+        if (cell.firstChild) {
+            cell.removeChild(cell.firstChild);
+        }
+        cell.style.backgroundColor = '';
+        cell.style.border = '';
+    });
+
+    if (currentPlayer === 'player1') {
+        renderGameboard(player1);
+        renderOpponentView(player2);
+        firstBoard.style.pointerEvents = 'auto';
+        secondBoard.style.pointerEvents = 'none';
+        instructions.textContent = 'Your turn';
+    } else {
+        renderGameboard(player2);
+        renderOpponentView(player1);
+        firstBoard.style.pointerEvents = 'none';
+        secondBoard.style.pointerEvents = 'auto';
+        instructions.textContent = "Opponent's turn";
+    }
 }
 
 function takeTurns(player1, player2) {
@@ -138,14 +181,16 @@ function boardsHandler(players, boards, coordIndicesArray) {
                         instructions.textContent = `${currentPlayer} won!`;
                     } else {
                         passDeviceButton.onclick = () => {
-                            clicked = false;
-                            body.appendChild(passScreen());
-                            currentPlayer =
-                                currentPlayer === 'player1'
-                                    ? 'opponent'
-                                    : 'player1';
+                            if (clicked) {
+                                clicked = false;
+                                body.appendChild(passScreen());
+                                currentPlayer =
+                                    currentPlayer === 'player1'
+                                        ? 'opponent'
+                                        : 'player1';
 
-                            takeTurns(players[0], players[1]);
+                                takeTurns(players[0], players[1]);
+                            }
                         };
                     }
                 }
@@ -222,7 +267,7 @@ function computerHandler(player) {
                         takeTurnsComputer();
                     }
                 }
-            }, 1000);
+            }, 0);
         }
     });
 }
@@ -298,8 +343,8 @@ function humanVersusHuman(player1, player2) {
 
 const domHandler = () => {
     const player1 = player('player1');
+    const player2 = player('opponent');
     let opponent;
-    let player2;
 
     player1.playerGameboard.placeShip(ship('carrier', 5), [0, 0], false);
     player1.playerGameboard.placeShip(ship('battleship', 4), [3, 0], false);
@@ -312,35 +357,249 @@ const domHandler = () => {
         const opponentButtons = document.querySelector('.opponentButtons');
         opponentButtons.style.visibility = 'hidden';
         opponent = 'human';
-        player2 = player('opponent');
         player2.playerGameboard.placeShip(ship('carrier', 5), [0, 0], true);
         player2.playerGameboard.placeShip(ship('battleship', 4), [1, 9], true);
         player2.playerGameboard.placeShip(ship('destroyer', 3), [2, 2], false);
         player2.playerGameboard.placeShip(ship('submarine', 3), [7, 5], false);
         player2.playerGameboard.placeShip(ship('patrol', 2), [9, 8], false);
         renderGameboard(player2);
+
+        const body = document.querySelector('body');
+        body.appendChild(passScreen());
+
+        currentPlayer = currentPlayer === 'player1' ? 'opponent' : 'player1';
+        setUpTurns(player1, player2);
+
+        const passScreenDiv = document.querySelector('.pass-screen');
+        passScreenDiv.textContent = 'Click to let Player2 place his ships';
+
+        startButton.style.visibility = 'visible';
+        randomButton.style.visibility = 'visible';
     });
 
     computerButton.addEventListener('click', () => {
         const opponentButtons = document.querySelector('.opponentButtons');
         opponentButtons.style.visibility = 'hidden';
         opponent = 'computer';
-        player2 = player('opponent');
         player2.playerGameboard.randomPlacement();
     });
 
     randomButton.addEventListener('click', () => {
-        const cells = document.querySelectorAll('#firstBoard .cell');
-        cells.forEach((cell) => {
-            cell.style.removeProperty('background-color');
-            cell.style.removeProperty('border');
-        });
-        player1.playerGameboard.randomPlacement();
-        renderGameboard(player1);
+        if (currentPlayer === 'player1') {
+            const cells = document.querySelectorAll('#firstBoard .cell');
+            cells.forEach((cell) => {
+                cell.style.removeProperty('background-color');
+                cell.style.removeProperty('border');
+            });
+            player1.playerGameboard.randomPlacement();
+            renderGameboard(player1);
+        } else {
+            const cells = document.querySelectorAll('#secondBoard .cell');
+            cells.forEach((cell) => {
+                cell.style.removeProperty('background-color');
+                cell.style.removeProperty('border');
+            });
+            player2.playerGameboard.randomPlacement();
+            renderGameboard(player2);
+        }
     });
+
+    function dragstartHandler(ev) {
+        const board =
+            currentPlayer === 'player1' ? '#firstBoard' : '#secondBoard';
+        const [x, y] = currentPlayer === 'player1' ? [10, 11] : [11, 12];
+
+        const shipName = ev.target.getAttribute('name');
+        const shipCells = document.querySelectorAll(
+            `${board} [name="${shipName}"]`,
+        );
+
+        const isVertical =
+            shipCells.length > 1 && shipCells[0].id[x] !== shipCells[1].id[x];
+
+        const shipData = {
+            cells: Array.from(shipCells).map((cell) => cell.id),
+            isVertical,
+        };
+
+        ev.dataTransfer.setData(
+            'application/ship-cells',
+            JSON.stringify(shipData),
+        );
+    }
+
+    function dropHandler(ev) {
+        ev.preventDefault();
+
+        const board =
+            currentPlayer === 'player1' ? 'firstBoard' : 'secondBoard';
+        const player = currentPlayer === 'player1' ? player1 : player2;
+        const [x, y] = currentPlayer === 'player1' ? [10, 11] : [11, 12];
+
+        const shipData = JSON.parse(
+            ev.dataTransfer.getData('application/ship-cells'),
+        );
+
+        const shipName = document
+            .getElementById(shipData.cells[0])
+            .getAttribute('name');
+
+        player.playerGameboard.removeShip(shipName);
+
+        const targetCoordinates = [
+            parseInt(ev.target.id[x], 10),
+            parseInt(ev.target.id[y], 10),
+        ];
+
+        if (
+            player.playerGameboard.placeShip(
+                ship(shipName, shipData.cells.length),
+                targetCoordinates,
+                shipData.isVertical,
+            ) !== 'Incorrect placement of ship'
+        ) {
+            shipData.cells.forEach((cellId) => {
+                const cell = document.getElementById(cellId);
+                if (cell) {
+                    cell.removeAttribute('name');
+                    cell.removeAttribute('draggable');
+                    cell.removeAttribute('style');
+                }
+            });
+
+            shipData.cells.forEach((cellId, index) => {
+                let newCoordinates;
+
+                if (shipData.isVertical) {
+                    newCoordinates = [
+                        targetCoordinates[0] + index,
+                        targetCoordinates[1],
+                    ];
+                } else {
+                    newCoordinates = [
+                        targetCoordinates[0],
+                        targetCoordinates[1] + index,
+                    ];
+                }
+
+                const newCellId = `${board}${newCoordinates.join('')}`;
+                const newCell = document.getElementById(newCellId);
+
+                if (newCell) {
+                    newCell.style.backgroundColor = 'rgba(0,0,255,0.1)';
+                    newCell.style.border = '2px solid #00f';
+                    newCell.setAttribute('name', shipName);
+                    newCell.draggable = true;
+                }
+            });
+        }
+    }
+
+    function clickHandler(ev) {
+        const player = currentPlayer === 'player1' ? player1 : player2;
+        const board =
+            currentPlayer === 'player1' ? 'firstBoard' : 'secondBoard';
+        const [x, y] = currentPlayer === 'player1' ? [10, 11] : [11, 12];
+
+        if (ev.target.style.length === 0) return;
+        const shipName = ev.target.getAttribute('name');
+        const shipCells = document.querySelectorAll(
+            `#${board} [name="${shipName}"]`,
+        );
+
+        const isVertical =
+            shipCells.length > 1 && shipCells[0].id[x] !== shipCells[1].id[x];
+
+        const shipData = {
+            cells: Array.from(shipCells).map((cell) => cell.id),
+            isVertical,
+        };
+
+        const targetCoordinates = [
+            parseInt(shipData.cells[0][x], 10),
+            parseInt(shipData.cells[0][y], 10),
+        ];
+
+        player.playerGameboard.removeShip(shipName);
+
+        if (
+            player.playerGameboard.placeShip(
+                ship(shipName, shipData.cells.length),
+                targetCoordinates,
+                !shipData.isVertical,
+            ) !== 'Incorrect placement of ship'
+        ) {
+            shipData.cells.forEach((cellId) => {
+                const cell = document.getElementById(cellId);
+                if (cell) {
+                    cell.style.backgroundColor = '';
+                    cell.style.border = '';
+                    cell.removeAttribute('name');
+                }
+            });
+
+            shipData.cells.forEach((cellId, index) => {
+                let newCoordinates;
+
+                if (shipData.isVertical) {
+                    newCoordinates = [
+                        targetCoordinates[0],
+                        targetCoordinates[1] + index,
+                    ];
+                } else {
+                    newCoordinates = [
+                        targetCoordinates[0] + index,
+                        targetCoordinates[1],
+                    ];
+                }
+
+                const newCellId = `${board}${newCoordinates.join('')}`;
+                const newCell = document.getElementById(newCellId);
+
+                if (newCell) {
+                    newCell.style.backgroundColor = 'rgba(0,0,255,0.1)';
+                    newCell.style.border = '2px solid #00f';
+                    newCell.setAttribute('name', shipName);
+                    newCell.draggable = true;
+                }
+            });
+        }
+    }
+
+    const handler = () => {
+        const cells = document.querySelectorAll('.cell');
+
+        cells.forEach((cell) => {
+            cell.addEventListener('dragstart', dragstartHandler);
+            cell.addEventListener('click', clickHandler);
+        });
+
+        const boards = document.querySelectorAll('.board');
+        boards.forEach((board) => {
+            board.addEventListener('dragover', (ev) => ev.preventDefault());
+            board.addEventListener('drop', dropHandler);
+        });
+    };
+
+    window.addEventListener('DOMContentLoaded', handler);
 
     startButton.addEventListener('click', () => {
         const instructions = document.querySelector('.instructions');
+
+        const body = document.querySelector('body');
+        body.appendChild(passScreen());
+
+        currentPlayer = currentPlayer === 'player1' ? 'opponent' : 'player1';
+        takeTurns(player1, player2);
+
+        const passScreenDiv = document.querySelector('.pass-screen');
+        passScreenDiv.textContent = 'Click to start the game';
+
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach((cell) => {
+            cell.draggable = false;
+            cell.removeEventListener('click', clickHandler);
+        });
 
         if (player2 === undefined) {
             instructions.textContent = 'opponent not ready';
