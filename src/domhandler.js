@@ -586,15 +586,6 @@ const domHandler = () => {
     startButton.addEventListener('click', () => {
         const instructions = document.querySelector('.instructions');
 
-        const body = document.querySelector('body');
-        body.appendChild(passScreen());
-
-        currentPlayer = currentPlayer === 'player1' ? 'opponent' : 'player1';
-        takeTurns(player1, player2);
-
-        const passScreenDiv = document.querySelector('.pass-screen');
-        passScreenDiv.textContent = 'Click to start the game';
-
         const cells = document.querySelectorAll('.cell');
         cells.forEach((cell) => {
             cell.draggable = false;
@@ -607,6 +598,16 @@ const domHandler = () => {
             if (opponent === 'computer') {
                 humanVersusComputer(player1, player2);
             } else {
+                const body = document.querySelector('body');
+                body.appendChild(passScreen());
+
+                currentPlayer =
+                    currentPlayer === 'player1' ? 'opponent' : 'player1';
+                takeTurns(player1, player2);
+
+                const passScreenDiv = document.querySelector('.pass-screen');
+                passScreenDiv.textContent = 'Click to start the game';
+
                 humanVersusHuman(player1, player2);
             }
         }
