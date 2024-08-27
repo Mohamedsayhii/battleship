@@ -343,7 +343,7 @@ function humanVersusHuman(player1, player2) {
 
 const domHandler = () => {
     const player1 = player('player1');
-    const player2 = player('opponent');
+    let player2;
     let opponent;
 
     player1.playerGameboard.placeShip(ship('carrier', 5), [0, 0], false);
@@ -356,7 +356,10 @@ const domHandler = () => {
     humanButton.addEventListener('click', () => {
         const opponentButtons = document.querySelector('.opponentButtons');
         opponentButtons.style.visibility = 'hidden';
+
         opponent = 'human';
+        player2 = player('opponent');
+
         player2.playerGameboard.placeShip(ship('carrier', 5), [0, 0], true);
         player2.playerGameboard.placeShip(ship('battleship', 4), [1, 9], true);
         player2.playerGameboard.placeShip(ship('destroyer', 3), [2, 2], false);
@@ -380,7 +383,10 @@ const domHandler = () => {
     computerButton.addEventListener('click', () => {
         const opponentButtons = document.querySelector('.opponentButtons');
         opponentButtons.style.visibility = 'hidden';
+
         opponent = 'computer';
+        player2 = player('opponent');
+
         player2.playerGameboard.randomPlacement();
     });
 
